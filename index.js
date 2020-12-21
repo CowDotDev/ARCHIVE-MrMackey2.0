@@ -14,7 +14,7 @@ client.on("ready", () => {
   console.log("Client is ready!");
 
   // Create all commands
-  Commands.initialize();
+  Commands.initialize(client);
   // Set all listeners
   Commands.setListener(client);
 });
