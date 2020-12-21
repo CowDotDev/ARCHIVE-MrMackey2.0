@@ -7,7 +7,7 @@ const Commands = require("./core/commands");
 const client = new Discord.Client();
 
 // attach the interaction client to discord.js client
-client.interactions = new Interactions(auth.token, auth.userID);
+client.interactions = new Interactions(auth.token, auth.clientID);
 
 // attach and event listener for the ready event
 client.on("ready", () => {
