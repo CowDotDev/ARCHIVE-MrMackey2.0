@@ -1,7 +1,10 @@
 let auth = require('../../auth.json');
 
 const Commands = [
+  require('./drugs'),
   require('./ping'),
+  require('./pizza'),
+  require('./xkcd'),
 ];
 
 module.exports.initialize = function(client) {
