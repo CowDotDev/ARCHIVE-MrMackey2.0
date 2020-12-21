@@ -5,9 +5,11 @@ const Commands = require("./core/commands");
 
 // create a new client
 const client = new Discord.Client();
+const token = auth.testBot ? auth.testToken : auth.token;
+const clientID = auth.testBot ? auth.testClientID : auth.clientID;
 
 // attach the interaction client to discord.js client
-client.interactions = new Interactions(auth.token, auth.clientID);
+client.interactions = new Interactions(token, clientID);
 
 // attach and event listener for the ready event
 client.on("ready", () => {
@@ -20,4 +22,4 @@ client.on("ready", () => {
 });
 
 // login
-client.login(auth.token);
+client.login(token);
