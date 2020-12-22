@@ -4,6 +4,7 @@ const Commands = [
   require('./drugs'),
   require('./ping'),
   require('./pizza'),
+  require('./twitter'),
   require('./xkcd'),
 ];
 
@@ -13,9 +14,12 @@ module.exports.initialize = function(client) {
       client.interactions
         .createCommand({
           name: command.keyword,
-          description: command.description
+          description: command.description,
+          options: typeof command.options !== "undefined" ? command.options : undefined
         }, auth.testBot ? auth.testServerID : undefined)
-        .catch(console.error)
+        .catch((e) => {
+          console.error(JSON.stringify(e.response.data.errors))
+        })
         .then(console.log);
     }
   });

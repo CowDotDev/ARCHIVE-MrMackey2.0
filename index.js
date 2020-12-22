@@ -2,6 +2,7 @@ let auth = require('./auth.json');
 const Discord = require("discord.js");
 const Interactions = require("./core/client/Interactions");
 const Commands = require("./core/commands");
+const Twitter = require('./core/external/twitter.js');
 
 // create a new client
 const client = new Discord.Client();
@@ -14,6 +15,10 @@ client.interactions = new Interactions(token, clientID);
 // attach and event listener for the ready event
 client.on("ready", () => {
   console.log("Client is ready!");
+
+  // Connect to Twitter
+  console.log("Connecting to Twitter...");
+  Twitter.requestBearerToken();
 
   // Create all commands
   Commands.initialize(client);

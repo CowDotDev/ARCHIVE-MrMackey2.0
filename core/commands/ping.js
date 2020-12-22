@@ -5,6 +5,6 @@ module.exports = {
   keyword,
   description,
   listener: function(interaction) {
-    interaction.channel.send("pong");
+    interaction.channel.send(`<@${interaction.author.id}> pong`);
   }
 };
