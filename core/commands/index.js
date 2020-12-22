@@ -19,7 +19,7 @@ module.exports.initialize = function(client) {
           name: command.keyword,
           description: command.description,
           options: typeof command.options !== "undefined" ? command.options : undefined
-        }, auth.testBot ? auth.testServerID : undefined)
+        })
         .catch((e) => {
           console.error(`Error creating command /${command.keywork}: ${JSON.stringify(e.response.data.errors)}`)
         })
