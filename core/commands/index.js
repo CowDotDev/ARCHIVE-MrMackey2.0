@@ -4,6 +4,7 @@ const Commands = [
   require('./drugs'),
   require('./ping'),
   require('./pizza'),
+  require('./rickAndMorty'),
   require('./twitter'),
   require('./xkcd'),
 ];
