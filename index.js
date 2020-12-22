@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
-
-const auth = require('./auth.json');
 const Interactions = require("discord-slash-commands-client").Client;
+
 const Commands = require("./core/commands");
-const Twitter = require('./core/external/twitter.js');
+const Twitter = require('./core/external/twitter');
+const auth = require('./auth.json');
 
 // create a new client
 const client = new Discord.Client();

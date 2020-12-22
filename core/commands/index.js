@@ -37,11 +37,11 @@ let definedCommandsKeywords = [];
  */
 const getDefinedCommands = async function(client) {
   await client.interactions.getCommands(false, guildID)
-    .catch(console.error)
     .then((res) => {
       console.log("Retrieved existing commands.");
       definedCommands = res;
-    });
+    })
+    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });
 };
 
 /**
@@ -85,11 +85,11 @@ const createCommand = async function(client, command) {
       description: command.description,
       options: typeof command.options !== "undefined" ? command.options : undefined
     }, guildID)
-    .catch((e) => {
-      console.error(`Error creating command /${command.keywork}: ${JSON.stringify(e.response.data.errors)}`)
-    })
     .then(() => {
       console.log(`Created command: /${command.keyword}`);
+    })
+    .catch((e) => {
+      console.error(`Error creating command /${command.keywork}: ${JSON.stringify(e.response.data.errors)}`)
     });
 };
 const createAllMissingCommands = async function(client) {
@@ -116,10 +116,10 @@ const updateCommand = async function(client, currentDefinition, updatedCommand) 
     description: updatedCommand.description,
     options: typeof updatedCommand.options !== "undefined" ? updatedCommand.options : undefined
   }, currentDefinition.id, guildID)
-    .catch(console.error)
     .then(() => {
       console.log(`Updated command: /${updatedCommand.keyword}`);
-    });
+    })
+    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });
 };
 
 /**
@@ -130,10 +130,10 @@ const updateCommand = async function(client, currentDefinition, updatedCommand) 
  */
 const deleteCommand = async function(client, currentDefinition) {
   await client.interactions.deleteCommand(currentDefinition.id, guildID)
-    .catch(console.error)
     .then(() => {
       console.log(`Deleted command: /${currentDefinition.name}`);
-    });
+    })
+    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });;
 };
 
 /**
@@ -151,7 +151,7 @@ const setListener = function(client) {
       }
     }
   });
-  console.log("Listening for commands...");
+  console.log("Listening for commands...")
 };
 
 module.exports = {
