@@ -6,6 +6,7 @@
   "author": "Zach Case",
   "dependencies": {
     "axios": "^0.21.0",
+    "discord-slash-commands-client": "1.0.4",
     "discord.js": "git+https://github.com/MatteZ02/discord.js.git"
   }
 }
