@@ -1,11 +1,13 @@
 let auth = require('../../auth.json');
 
 const Commands = [
+  require('./chuck'),
   require('./drugs'),
   require('./ping'),
   require('./pizza'),
-  require('./rickAndMorty'),
+  require('./ram'),
   require('./twitter'),
+  require('./urban'),
   require('./xkcd'),
 ];
 
@@ -19,9 +21,11 @@ module.exports.initialize = function(client) {
           options: typeof command.options !== "undefined" ? command.options : undefined
         }, auth.testBot ? auth.testServerID : undefined)
         .catch((e) => {
-          console.error(JSON.stringify(e.response.data.errors))
+          console.error(`Error creating command /${command.keywork}: ${JSON.stringify(e.response.data.errors)}`)
         })
-        .then(console.log);
+        .then(() => {
+          console.log(`Created command: /${command.keyword}`);
+        });
     }
   });
 };
