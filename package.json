@@ -5,6 +5,7 @@
   "main": "index.js",
   "author": "Zach Case",
   "dependencies": {
+    "async-af": "^7.0.39",
     "axios": "^0.21.0",
     "discord.js": "git+https://github.com/MatteZ02/discord.js.git"
   }
