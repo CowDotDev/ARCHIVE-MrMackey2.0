@@ -1,11 +1,11 @@
 let api = require('axios');
 const { MessageEmbed } = require('discord.js');
 
-const keyword = "xkcd";
+const name = "xkcd";
 const description = "Returns a random xkcd comic strip.";
 
 module.exports = {
-  keyword,
+  name,
   description,
   listener: function(interaction) {
     const maxId = 2400; // This is the maximum ID that doesn't 404, as of 12/21/2020

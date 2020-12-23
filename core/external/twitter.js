@@ -1,5 +1,5 @@
-var api = require('axios');
-var auth = require('../../auth.json');
+const api = require('axios');
+const auth = require('../../auth.json');
 
 let bearerTokenCred = "",
     bearerToken = "";

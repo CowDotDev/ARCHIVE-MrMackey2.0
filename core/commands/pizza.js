@@ -1,8 +1,8 @@
-const keyword = "pizza";
+const name = "pizza";
 const description = "What time is it?";
 
 module.exports = {
-  keyword,
+  name,
   description,
   listener: function(interaction) {
     interaction.channel.send({

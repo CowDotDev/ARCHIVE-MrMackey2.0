@@ -1,4 +1,5 @@
 let auth = require('../../auth.json');
+const db = require("../external/firebase");
 
 // Sets guildID if auth.testBot
 // If auth.testBot is false, all requests will be "global"
@@ -11,24 +12,26 @@ const Commands = [
   require('./ping'),
   require('./pizza'),
   require('./ram'),
+  require('./reactions'),
   require('./twitter'),
   require('./urban'),
   require('./xkcd'),
 ];
-// CommandsKeywordsIndex holds all the slash command definitions, indexed by their keyword
-const CommandsKeywordsIndex = (function() {
+// CommandNamesIndex holds all the slash command definitions, indexed by their name
+const CommandNamesIndex = (function() {
   let array = [];
   for(let i = 0; i < Commands.length; i++) {
     let command = Commands[i];
-    array[command.keyword] = command;
+    array[command.name] = command;
   };
   return array;
 })();
 
 // definedCommands holds the existing commands already created.
-// definedCommandsKeywords holds all the existing keywords - to help determine which should be purged.
+// definedCommandNames holds all the existing names - to help determine which should be purged.
 let definedCommands = [];
-let definedCommandsKeywords = [];
+let definedCommandNames = [];
+let definedReactions = [];
 
 /**
  * getDefinedCommands
@@ -40,9 +43,32 @@ const getDefinedCommands = async function(client) {
     .then((res) => {
       console.log("Retrieved existing commands.");
       definedCommands = res;
+      definedCommands.forEach(command => { definedCommandNames.push(command.name); })
     })
-    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });
+    .catch((e) => { console.error(JSON.stringify(e)) });
 };
+
+/**
+ * getCustomReactionCommands
+ * Adds all defined custom reactions to the definedCommandNames array
+ */
+const getCustomReactionCommands = async function() {
+  await db.ref("reactions").once("value").then((snapshot) => {
+    if(snapshot.val() !== null) {
+      definedReactions = snapshot.val();
+    }
+    console.log("Retrieved existing custom reaction commands.");
+  });
+};
+
+/**
+ * isNameTaken
+ * @param {String} name 
+ * Returns a Boolean based on whether or not definedCommandNames has reference to the supplied name.
+ */
+const isNameTaken = function(name) {
+  return definedCommandNames.indexOf(name) >= 0;
+}
 
 /**
  * cleanDefinedCommands
@@ -53,13 +79,15 @@ const getDefinedCommands = async function(client) {
 const cleanDefinedCommand = async function(client, index) {
   const definedCommand = definedCommands[index];
   let name = definedCommand.name;
-  let shouldDelete = typeof CommandsKeywordsIndex[name] === "undefined";
-  
-  definedCommandsKeywords.push(name);
-  if(shouldDelete) {
+  let shouldDelete = typeof CommandNamesIndex[name] === "undefined";
+  let isCustomReaction = typeof definedReactions[name] !== "undefined";
+
+  if(shouldDelete && !isCustomReaction) {
     await deleteCommand(client, definedCommand);
+  } else if(!isCustomReaction) {
+    await updateCommand(client, definedCommand, CommandNamesIndex[name]);
   } else {
-    await updateCommand(client, definedCommand, CommandsKeywordsIndex[name]);
+    console.log(`Verified reaction command: /${name}`);
   }
 
   if (++index < definedCommands.length) {
@@ -78,26 +106,27 @@ const cleanDefinedCommands = async function(client) {
  * @param {Object} command 
  * Save new command on Discord, for our bot. If auth.testBot is true, we will save the command only on the auth.testServerID provided.
  */
-const createCommand = async function(client, command) {
-  await client.interactions
+const createCommand = async function(client, command, forceGuildID) {
+  return await client.interactions
     .createCommand({
-      name: command.keyword,
+      name: command.name,
       description: command.description,
       options: typeof command.options !== "undefined" ? command.options : undefined
-    }, guildID)
+    }, forceGuildID ? forceGuildID : guildID)
     .then(() => {
-      console.log(`Created command: /${command.keyword}`);
-    })
-    .catch((e) => {
-      console.error(`Error creating command /${command.keywork}: ${JSON.stringify(e.response.data.errors)}`)
+      definedCommandNames.push(command.name);
+      console.log(`Created command: /${command.name}`);
+    }).catch((e) => {
+      console.error(`Error creating command /${command.name}: ${JSON.stringify(e)}`);
+      throw new Error("Error creating command");
     });
 };
 const createAllMissingCommands = async function(client) {
   for(let i = 0; i < Commands.length; i++) {
     const command = Commands[i];
-    if(typeof command.keyword === "string" &&
+    if(typeof command.name === "string" &&
       typeof command.description === "string" &&
-      definedCommandsKeywords.indexOf(command.keyword) < 0) {
+      !isNameTaken(command.name)) {
       await createCommand(client, command);
     }
   };
@@ -110,16 +139,16 @@ const createAllMissingCommands = async function(client) {
  * @param {Object} updatedCommand 
  * Will update the existing defintion of the command to match the repo's definitions.
  */
-const updateCommand = async function(client, currentDefinition, updatedCommand) {
+const updateCommand = async function(client, currentDefinition, updatedCommand, forceGuildID) {
   await client.interactions.editCommand({
-    name: updatedCommand.keyword,
+    name: updatedCommand.name,
     description: updatedCommand.description,
     options: typeof updatedCommand.options !== "undefined" ? updatedCommand.options : undefined
-  }, currentDefinition.id, guildID)
+  }, currentDefinition.id, forceGuildID ? forceGuildID : guildID)
     .then(() => {
-      console.log(`Updated command: /${updatedCommand.keyword}`);
+      console.log(`Updated command: /${updatedCommand.name}`);
     })
-    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });
+    .catch((e) => { console.error(JSON.stringify(e)) });
 };
 
 /**
@@ -128,13 +157,32 @@ const updateCommand = async function(client, currentDefinition, updatedCommand) 
  * @param {Object} currentDefinition 
  * Removes the existing definition from Discord, for the bot.
  */
-const deleteCommand = async function(client, currentDefinition) {
-  await client.interactions.deleteCommand(currentDefinition.id, guildID)
+const deleteCommand = async function(client, currentDefinition, forceGuildID) {
+  await client.interactions.deleteCommand(currentDefinition.id, forceGuildID ? forceGuildID : guildID)
     .then(() => {
+      const index = definedCommandNames.indexOf(currentDefinition.name);
+      definedCommandNames.splice(index, 1);
       console.log(`Deleted command: /${currentDefinition.name}`);
     })
-    .catch((e) => { console.error(JSON.stringify(e.response.data.errors)) });;
+    .catch((e) => { console.error(JSON.stringify(e)) });;
 };
+
+/**
+ * runCustomReaction
+ * @param {DiscordJSClient} client 
+ * @param {DiscordInteraction} interaction 
+ * Tries to grab the custom reaction response from Firebase.
+ */
+const runCustomReaction = async function(client, interaction) {
+  await db.ref(`reactions/${interaction.guild.id}/${interaction.name}`).once("value").then((snapshot) => {
+    if(snapshot.val() !== null) {
+      interaction.channel.send(snapshot.val().response);
+    } else {
+      deleteCommand(client, interaction, interaction.guild.id);
+      interaction.channel.send(`<@${interaction.author.id}> Sorry, but /${interaction.name} doesn't seem to be a valid command, m'kay... I've deleted it.`);
+    }
+  })
+}
 
 /**
  * setListener
@@ -143,23 +191,29 @@ const deleteCommand = async function(client, currentDefinition) {
  */
 const setListener = function(client) {
   client.on("interactionCreate", (interaction) => {
+    let checkCustomReactions = true;
     for(let i = 0; i < Commands.length; i++) {
       const command = Commands[i];
-      if (command.keyword.toLowerCase() === interaction.name && typeof command.listener === "function") {
-        command.listener(interaction);
+      if (command.name.toLowerCase() === interaction.name && typeof command.listener === "function") {
+        command.listener(interaction, client, CommandsExport);
+        checkCustomReactions = false;
         break;
       }
     }
+    if(checkCustomReactions) runCustomReaction(client, interaction);
   });
   console.log("Listening for commands...")
 };
 
-module.exports = {
+const CommandsExport = {
   getDefinedCommands,
+  getCustomReactionCommands,
   cleanDefinedCommands,
   createAllMissingCommands,
   createCommand,
   updateCommand,
   deleteCommand,
-  setListener
+  setListener,
+  isNameTaken
 };
+module.exports = CommandsExport;

@@ -1,10 +1,10 @@
 let api = require('axios');
 
-const keyword = "chuck";
+const name = "chuck";
 const description = "Generates a random Chuck Norris joke.";
 
 module.exports = {
-  keyword,
+  name,
   description,
   listener: function(interaction) {
     api.get(`http://api.icndb.com/jokes/random`)

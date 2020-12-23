@@ -24,6 +24,8 @@ client.on("ready", async () => {
 
   // Get list of all defined commands
   await Commands.getDefinedCommands(client);
+  // Get list of all custom reaction commans
+  await Commands.getCustomReactionCommands();
   // Clean/Update defined commands - Remove commands no-longer exported in this repo, and update defined commands to ensure they are up-to-day.
   await Commands.cleanDefinedCommands(client);
   // Create all commands

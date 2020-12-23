@@ -1,11 +1,11 @@
 const { MessageEmbed } = require('discord.js');
 let api = require('axios');
 
-const keyword = "ram";
+const name = "ram";
 const description = "Returns a Rick and Morty gif that, hopefully, matches your query.";
 
 module.exports = {
-  keyword,
+  name,
   description,
   options: [{
     type: 3,

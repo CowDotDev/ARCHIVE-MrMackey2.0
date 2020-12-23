@@ -1,10 +1,10 @@
 let Twitter = require('../external/twitter.js');
 
-const keyword = "twitter";
+const name = "twitter";
 const description = "Retrieve tweet(s) from specified user.";
 
 module.exports = {
-  keyword,
+  name,
   description,
   options: [
     {

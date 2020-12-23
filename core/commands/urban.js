@@ -1,11 +1,11 @@
 let api = require('axios');
 const { MessageEmbed } = require('discord.js');
 
-const keyword = "urban";
+const name = "urban";
 const description = "Given a term, will return a matching definition from Urban Dictionary.";
 
 module.exports = {
-  keyword,
+  name,
   description,
   options: [{
     type: 3,

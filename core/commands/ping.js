@@ -1,8 +1,8 @@
-const keyword = "ping";
+const name = "ping";
 const description = "... pong!";
 
 module.exports = {
-  keyword,
+  name,
   description,
   listener: function(interaction) {
     interaction.channel.send(`<@${interaction.author.id}> pong`);
